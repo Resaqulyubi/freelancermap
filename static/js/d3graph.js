@@ -211,7 +211,7 @@ graph = function(id, d, canvas) {
     
     // Containers
     if (use_canvas) {
-        canvas = d3.select("body").insert("canvas", id)
+        canvas = d3.select(map.getPanes().overlayPane).insert("canvas", id)
             .attr("width", width)
             .attr("height", height)
             .style("position", "absolute");
@@ -219,10 +219,12 @@ graph = function(id, d, canvas) {
         context = canvas.node().getContext("2d");
         canvas.call(zoom).on("dblclick.zoom", null);
     }
+    // d3.select(map.getPanes().overlayPane).append("div")
     
     // map._initPathRoot()  
-    // svg=d3.select(id).append("svg")
-    svg = d3.select(map.getPanes().overlayPane).append("svg").attr("class","leaflet-zoom-animated")
+    // svg=d3.select(id)
+    svg = d3.select(map.getPanes().overlayPane)
+    .append("svg")
     // svg = d3.select(id).append("svg")
     
         // .attr("viewBox", "0 0 " + width + " " + height)
