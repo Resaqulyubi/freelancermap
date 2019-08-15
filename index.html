@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+<head>
+  <title>COLOMBIA: Conectividad Red Vial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Pablo Astudillo, inspired on Thomas Buhrmann's Neuron Connectome">
+  <link rel="stylesheet" type='text/css' href="code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" type='text/css' href="static/css/bootstrap.min.css">
+  <link rel="stylesheet" type='text/css' href="static/css/d3.css">
+  <link rel="shortcut icon" href="static/images/CO.png">
+  <script type=text/javascript>$SCRIPT_ROOT = ""; </script>
+
+</head>
+<style>
+  #map {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+<body>
+<div id="graph"></div>
+
+
+<div id="map" ></div>
+<!-- <div id="map" style="opacity: 0;visibility: hidden;"></div> -->
+  <!-- <script src="https://maps.googleapis.com/maps/api/js?"></script> -->
+
+  <!-- <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBRBgz7g1_ls9WF9PtvfR8Scv1V6CD-9is&callback=initMap">
+    </script> -->
+
+  <!-- Left slider -->
+
+  <div class="uiwidget uiwidget-left out" id="left-widget">
+    
+      <!-- Panel city search -->
+        <div class="formpanel">
+          <h3>Ciudades
+            <small><a href="#searchpanel" data-toggle="collapse" aria-expanded="true" aria-controls="nodepanel">
+            <span class='glyphicon glyphicon-resize-small pull-right'></span>
+            </a></small>
+          </h3>
+          <div id="searchpanel" class="panel-collapse collapse in">
+            <p>
+              <div class="input-group input-group-sm">
+                <input id="search-description_n4" type="text" placeholder="Nombre" value="" size="4" class="form-control"/>
+                <span class="input-group-btn">
+                  <button type="button" id="snbutton" class="btn btn-default" onclick="searchDescription_n4();">Buscar</button>
+                </span>
+              </div>
+            </p>
+          </div>
+        </div>
+        <div class="uihandle uihandle-left" id="lefthandle">
+          <a href="#">
+            <span class="handlelabel">Controls</span>
+            <span class='glyphicon glyphicon-chevron-left'></span>
+          </a>
+        </div>
+
+        <!-- <style>  %REVERSE SLIDER
+        #tminslider {
+          direction: rtl
+        }
+        </style> -->
+
+
+        <!-- Panel visibility -->
+
+        <div class="formpanel">
+          <h3>Visibilidad
+            <small><a href="#vispanel" data-toggle="collapse" aria-expanded="false" aria-controls="vispanel">
+              <span class='glyphicon glyphicon-resize-full pull-right'></span>
+            </a></small>
+          </h3>
+          <div id="vispanel" class="panel-collapse collapse in">
+          Elementos para visualizar en la red de transporte
+            <p><div class="btn-group btn-group-xs btn-group-justified" id="prune-radio" data-toggle="buttons-radio">
+              <a href="#" id="prune1" type="button" data-toggle="button" name="option" value="1" class="btn btn-default active" title="Remueve los elementos filtrados">Remover</a>
+              <a hre="#" id="prune2" type="button" data-toggle="button" name="option" value="2" class="btn btn-default" title="Make filtered network elements invisible">Ocultar</a>
+            </div></p>
+
+            <div class="form-group" id="tmin"> <!-- I replaced wmin to tmin in index.html and d3graph.js -->
+              <label for="tminslider">Tiempo Mínimo de Viaje <br>[0-3 horas]:</label><br>Menor a:  <output for="tminslider" id="tminlabel">2</output> hora(s)
+              <input type="range" id="tminslider" name="tmin" value="1.6" min="0.2" max="3" step="0.1" oninput="filtertmin(value)">
+            </div>
+
+            <div class="form-group" id="ttraf"> <!-- I replaced jmin for ttraf in in index.html and d3graph.js -->
+              <label for="ttrafslider"> Tráfico Total Potencial <br> [10 - 800 000 Personas]:</label><br> Mayor a: <output for="ttrafslider" id="ttraflabel">10</output>
+              <input type="range" id="ttrafslider" name="ttraf" value="100" min="10" max="820000" oninput="filterttraf(value)">
+            </div>
+
+            <div class="form-group" id="nhab"> <!-- Filter Node Weight -->
+              <label for="nhabslider"> Población  <br> [100 - 600M hab]:</label><br> Mayor a: <output for="nhabslider" id="nhablabel">100</output> Habs
+              <input type="range" id="nhabslider" name="nhab" value="100" min="100" max="600400" step="1000" oninput="filternhab(value)">
+            </div>
+
+
+            <!-- <div class="checkbox">
+              <label><input type="checkbox" onchange="toggleSynapses(this)" checked> Select forward linkages 'Out-Degree'</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" onchange="toggleJunctions(this)" checked>Select inward linkages 'In-Degree'</label>
+            </div> -->
+            <!-- <div class="checkbox">
+              <label title="Indicate directionality"><input type="checkbox" onchange="toggleArrows(this)" checked>Arrows</label>
+            </div> -->
+            <!-- <div class="checkbox">
+              <label title="Disambiguate multiple connections between two neurons"><input type="checkbox" onchange="arcsplease(this)">Connections as arcs</label>
+            </div> -->
+          </div>
+        </div>
+
+        <div class="formpanel">
+          <h3>Conexiones
+            <small><a href="#subpanel" data-toggle="collapse" aria-expanded="true" aria-controls="subpanel">
+              <span class='glyphicon glyphicon-resize-small pull-right'></span>
+            </a></small>
+          </h3>
+          <div id="subpanel" class="panel-collapse collapse">
+            Seleccionar dos ciudades de interés para observar conectividad.
+            <!-- Choose two sets of (comma-separated) industries and find the subgraph connecting them. -->
+            <p>
+              <div class="">
+                <input id="group1" type="search" placeholder="Ciudad 1" value="" size="4" class="form-control input-sm"/>
+                <!-- <input id="group1" type="search" placeholder="Group1" value="Industria - 1" class="form-control input-sm"/> -->
+
+
+                <div id="conn-dir-sel" class="input-group-btn">
+                  <button type="button" id="dirButton" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="Choose directed or undirected connections">&#8595;</button>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">&#8595;</a></li>
+                    <li><a href="#">&#8597;</a></li>
+                  </ul>
+                </div>
+
+                <input id="group2" type="search" placeholder="Ciudad 2" value="" size = "4" class="form-control input-sm"/>
+                <!-- <input id="group2" type="search" placeholder="Group2" value="Industria - 2" class="form-control input-sm"/> -->
+                <!-- <input id="group1" type="search" placeholder="Industria 1" value="" size="4" class="form-control input-sm"/> -->
+
+              </div>
+            </p>
+
+            <!-- <div class="form-group">
+              <label for="rec-sel">Incluir las siguientes industrias:</label>
+              <input id="rec-sel" type="search" placeholder="Ciudad" value="" size = "4" class="form-control input-sm"/>
+            </div> -->
+
+            <!-- <div class="form-group">
+              <label for="mus-sel">Include these muscles:</label>
+              <div>
+                <label class="checkbox-inline" ><input type="checkbox" id="mhead-check">Head</label>
+                <label class="checkbox-inline"><input type="checkbox" id="mneck-check">Neck</label>
+                <label class="checkbox-inline"><input type="checkbox" id="mbody-check">Body</label>
+              </div>
+            </div> -->
+
+            <!-- <div class="form-group" id="subw">
+              <label for="subwslider">Tiempo Mímino de Viaje <br>[0-1000 MM US Dollars]:</label> <output for="subwSlider" id="subwlabel">1</output>
+              <input type="range" id="subwslider" name="subw" value="1" min="1" max="10" oninput="document.getElementById('subwlabel').value = value;">
+            </div>
+
+            <div class="form-group" id="subp">
+              <label for="subpslider">Minimum Link Value <br> [0-1000 MM US Dollars]: </label> <output for="subpSlider" id="subplabel">3</output>
+              <input type="range" id="subpslider" name="subp" value="3" min="1" max="10" oninput="document.getElementById('subplabel').value = value;">
+            </div>
+
+            <div class="form-group" id="subj">
+              <label for="subjslider"> Number of Connections <br> Minimum [1-10]: </label> <output for="subjSlider" id="subjlabel">1</output>
+              <input type="range" id="subjslider" name="subj" value="1" min="1" max="10" oninput="document.getElementById('subjlabel').value = value;">
+            </div> -->
+
+
+            <p>
+              <div class="dropdown" id="preset-dd">
+                <label for="presetButton" style="width:100%">Select predetermined graphs:</label>
+                <button class="btn btn-default btn-sm btn-block dropdown-toggle" type="button" id="presetButton" data-toggle="dropdown" aria-expanded="true">
+                  Presets
+                  <span class="caret"></span>
+                </button>
+                <!-- <ul class="dropdown-menu" role="menu" aria-labelledby="presetButton" id="presetList">
+                </ul> -->
+                <ul class="dropdown-menu" role="menu" aria-labelledby="presetButton" id="">
+                  <li><a>Config: 1</a></li>
+                  <li><a>Config: 2</a></li>
+                </ul>
+              </div>
+            </p>
+
+            <div class="btn-group btn-group-justified btn-group-sm" role="group">
+                <a href="#" id="fetchbutton" class="btn btn-default btn-sm" type="button" title="Query subgraph with selected  parameters" onclick="subGraph();">Extract</a>
+                <a href="#" id="expandbutton" class="btn btn-default disabled" type="button" title="Fetch ALL connections for fetched subgraph" onclick="<!-- expand(); -->">Fetchr</a>
+                <a href="#" id="resetbutton" class="btn btn-default" type="button" title="Return to full network" onclick="graphReset();">Reset</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Export -->
+        <div class="formpanel">
+          <h3>Exportar
+            <small><a href="#exppanel" data-toggle="collapse" aria-expanded="false" aria-controls="exppanel">
+            <span class='glyphicon glyphicon-resize-full pull-right'></span>
+            </a></small>
+          </h3>
+          <div id="exppanel" class="panel-collapse collapse">
+            Download network as a text file.
+            <form action="" method="get" role="form" name="exportform" target="_blank">
+              <p>
+                <div class="dropdown" id="export-dd">
+                  <label for="presetButton" style="width:100%">Select format:</label>
+                  <button class="btn btn-default btn-sm btn-block dropdown-toggle" type="button" id="exportFormatDD" data-toggle="dropdown" aria-expanded="true">
+                    Adjacency list
+                    <span class="caret"></span>
+                  </button>
+                  <input type="hidden" id="selected-format" name="format" value="adj"/>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="exportFormatDD" id="exprtFormatList">
+                    <!-- <li role="presentation"><a href="#" id="exp1" value="json-list" role="menuitem" tabindex=-1>JSON (list)</a></li>
+                    <li role="presentation"><a href="#" id="exp1" value="json-graph" role="menuitem" tabindex=-1>JSON (adj)</a></li>
+                    <li role="presentation"><a href="#" id="exp2" value="graphml" role="menuitem" tabindex=-1>GraphML</a></li>
+                    <li role="presentation"><a href="#" id="exp3" value="gml" role="menuitem" tabindex=-1>Gml</a></li> -->
+                    <li role="presentation"><a href="#" id="exp4" value="adj" role="menuitem" tabindex=-1>Adjacency list</a></li>
+                  </ul>
+                </div>
+              </p>
+              <a href="javascript:{ document.exportform.submit();}" type="submit" target="_blank" class="btn btn-sm btn-default btn-block" role="button" title="Export current graph">Export</a>
+            </form>
+            <p><br>
+            Or download image<br>
+            </p>
+            <a href="javascript:downloadPng();" class="btn btn-sm btn-default btn-block" role="button" title="Download Png">Download as .png</a>
+
+          </div>
+        </div>
+        <!-- Export panel -->
+
+
+    </div> <!-- End left slider -->
+
+
+    <!-- Right slider -->
+    <div class="uiwidget uiwidget-right out" id="right-widget">
+
+
+
+      <!-- Panel CLUSTERS -->
+
+      <div class="formpanel">
+        <h3><span id="group-heading">CLUSTERS</span>
+          <small><a href="#group" data-toggle="collapse" aria-expanded="true" aria-controls="group">
+          <span class='glyphicon glyphicon-resize-small pull-right'></span>
+          </a></small>
+        </h3>
+        <div id="group" class="panel-collapse collapse in">
+          <div id="footer" class="noselect"></div>
+        </div>
+      </div>
+
+
+      <div class="uihandle uihandle-right" id="righthandle">
+        <a href="#">
+          <span class='glyphicon glyphicon-chevron-right'></span>
+          <span class="handlelabel"> Info</span>
+        </a>
+      </div>
+
+
+      <!-- Panel Statistics -->
+      <!-- <div class="formpanel">
+        <h3>Statistics
+          <small><a href="#statpanel" data-toggle="collapse" aria-expanded="true" aria-controls="statpanel">
+          <span class='glyphicon glyphicon-resize-small pull-right'></span>
+          </a></small>
+        </h3>
+        <div id="statpanel" class="panel-collapse collapse in">
+          <ul class="list-group list-group-sm">
+            <li class="list-group-item"><span class="badge badge-sm stats-item" id="stats-n"></span>Industries</li>
+            <li class="list-group-item"><span class="badge stats-item" id="stats-m"></span>Business</li>
+            <li class="list-group-item"><span class="badge stats-item" id="stats-s"></span>Tax</li>
+            <li class="list-group-item"><span class="badge stats-item" id="stats-ej"></span>Temp1</li>
+            <li class="list-group-item"><span class="badge stats-item" id="stats-nmj"></span>Temp2</li>
+          </ul>
+        </div>
+      </div> -->
+
+
+
+      <!-- Panel Node Info -->
+
+      <div class="formpanel">
+        <h3><span id="node-heading">Estadísticas</span>
+          <small><a href="#nodepanel" data-toggle="collapse" aria-expanded="true" aria-controls="nodepanel">
+          <span class='glyphicon glyphicon-resize-small pull-right'></span>
+          </a></small>
+        </h3>
+        <div id="nodepanel" class="panel-collapse collapse in">
+          <span id="nodeinfo">Seleccionar ciudad para ver detalles...</span>
+        </div>
+      </div>
+<!-- zoom in and out -->
+<div class="formpanel">
+  <h3>Zoom In and Out
+    <input type="range" id="zoominandout" name="zoominandout" value="6" min="1" max="10" step="1" oninput="zoominandout(value)">
+    </a></small>
+  </h3>
+  
+</div>
+<!-- zoom in and out -->
+
+    </div><!-- Right slider -->
+
+    <div id="footerwrapper">
+      <div id="nodepanel_footer" style="width:30%; margin:0 auto; ">
+        <span id="nodeinfo_footer"></span>
+
+      </div>
+    </div>
+
+
+    <div class="topwrapper" >
+      <div class="introheader" >
+        <h3><center>Explorador de Conectividad Terrestre VENEZUELA</center></em></h3>
+
+        <br />
+
+        <p>
+          El Explorador de Conectividad Terrestre es una herramienta que permite visual e interactivamente explorar las conexiones terrestres de todo el país. El principal objetivo es proveer información sólida sobre movilidad terrestre - basada en datos reales y actualizados - a tomadores de decisiones para identificar oportunidades de inversión. Los datos y metodologías para la construcción de esta herramienta estarán disponibles en: <a href="acerca.html"> ACERCA DE </a>.
+        </p><br>
+
+        <br />
+
+        <p class="text-center"><a href="javascript:toggleTopPanel();" type="button" class="btn btn-warning">Iniciar</a></p>
+
+        <br />
+
+        <h4>Instrucciones</h4>
+
+        <br />
+
+
+        <p>
+          <dl class="dl-horizontal" style="text-align: left">
+            <dt>Cursor</dt>
+            <dd>Resaltar los vecinos [primer nivel] de la ciudad seleccionada.</dd>
+            <dt>Click</dt>
+            <dd>Bloquear y muestrar los datos de la ciudad en el panel de la izquierda. La ciudad seleccionada se resalta con un borde discontinuo.</dd>
+            <dt>Dbl-click</dt>
+            <dd>Liberar la ciudad seleccionada.</dd>
+          </dl>
+          Además de las funciones anteriores, es posible acercar, alejar y mover la red para facilitar la visualización.
+        </p>
+        <!-- <h5>UI controls</h5> -->
+        <!-- <p> -->
+          <!-- The panels on the left control which part of the full network is currently available in the browser (Subgraph panel), and which elements of the network are currently visible (Visibility panel). It also allows you to find a single neuron by name. -->
+        <!-- </p> -->
+        <!-- <h5>Extracting a subcircuit</h5> -->
+        <!-- <p> -->
+          <!-- First choose two or more neuron groups in the Subgraph panel. Select whether you care about the direction of connectivity (e.g. from sensory to motor neurons), or whether you require all bidirectional paths. Then choose filter settings to constrain the subcircuits maximal path lengths (longer is more costly) and minimum number of synapses per connection. Now Fetch the results. In order to then add back in all existing connections between the returned neurons (irrespective of filter settings), click Expand. -->
+        <!-- </p> -->
+        <!-- <h5>Information panels</h5> -->
+        <!-- <p> -->
+          <!-- The UI panels on the right display information about the currently visible network as well as individual nodes. It also offers a means to export the current network in various formats. -->
+        <!-- </p> -->
+       <!--  For information about the data used to construct the network visualization, and the underlying technology, <a href="/about">check here</a>. -->
+
+       <br />
+
+       <h4>Créditos</h4>
+
+
+        <br />
+
+       <!-- <center><img src="https://i.vimeocdn.com/portrait/21487382_600x600" alt="Collective Learning" width="70" height="70">
+       <img src="https://civilservant.io/img/MIT_ML_Logo_K_RGB.png" alt="Media Lab" width="108.2" height="70">
+       <img src="https://logoeps.com/wp-content/uploads/2013/06/university-of-oxford-vector-logo.png" alt="Oxford" width="70" height="70"> -->
+       <!-- <img src="https://3nctue1bp8zq3n42lg2px7xz-wpengine.netdna-ssl.com/wp-content/uploads/2017/06/sponsorship_page_images8.jpg" alt="Oxford" width="65" height="65"> -->
+       <!-- <img src="http://www.2degreepathways.com/static/img/logo_ssee_2.png" alt="Oxford" width="308.1" height="65"> -->
+     </center>
+
+       <br />
+
+
+
+      </div>
+      <div class="uihandle uihandle-top" id="tophandle">
+        <a href="#">
+          <span class='glyphicon glyphicon-question-sign'></span>
+        </a>
+      </div>
+    </div>
+
+
+
+  <script type='text/javascript' src="code.jquery.com/jquery-2.1.3.min.js"> </script>
+  <script type='text/javascript' src="code.jquery.com/ui/1.11.2/jquery-ui.min.js"> </script>
+  <script type='text/javascript' src="code.jquery.com/ui/jquery.csv.min.js"> </script>
+  <script type="text/javascript" src=static/js/bootstrap.min.js></script>
+  <script type="text/javascript" src=static/js/jsnetworkx.js></script>
+
+	<script type="text/javascript" src=static/js/d3.v3.min.js></script>
+  <script type="text/javascript" src=static/js/d3-legend.min.js></script>
+  <script type="text/javascript" src=static/js/crossfilter.min.js></script>
+  <!-- <script src="static/L.D3SvgOverlay.min.js"></script> -->
+  <script>
+
+  // Register event handlers
+  $(function() {
+
+    $('#prune-radio a').click(function() {
+      $(this).addClass('active').siblings().removeClass('active');
+    });
+
+    // $('#search-node').click(function() {
+    //   $(this).removeClass("alert-danger");
+    // });
+
+    $('#search-description_n4').click(function() {
+      $(this).removeClass("alert-danger");
+    });
+
+    $SCRIPT_ROOT = "";
+
+    $(".dropdown-menu li a").click(function(){
+      $(this).parents(".input-group-btn").find('.btn').text($(this).text());
+      $(this).parents(".input-group-btn").find('.btn').val($(this).text());
+    });
+
+    $(".dropdown li a").click(function(){
+      $(this).parents(".dropdown").find('.btn').html( ($(this).text() + ' <span class="caret"></span>'));
+      $(this).parents(".dropdown").find('.btn').val($(this).text());
+    });
+
+    $("#export-dd li a").click(function () {
+      var selectedOption = $(this).attr('value');
+      $("#selected-format").attr('value', selectedOption);
+    });
+
+    // Change minimize/maximize buttons
+    $('.collapse').on('hidden.bs.collapse', function () {
+      $(this).parent().find("span.glyphicon").removeClass("glyphicon-resize-small").addClass("glyphicon-resize-full");
+    });
+    $('.collapse').on('show.bs.collapse', function () {
+      $(this).parent().find("span.glyphicon").removeClass("glyphicon-resize-full").addClass("glyphicon-resize-small");
+    });
+
+    $("#preset-dd li a[role='menuitem']").click(function(e){
+      applyPreset($(this).attr("id"));
+      e.preventDefault();
+    });
+
+    $(".btn").mouseup(function(){
+      $(this).blur();
+    });
+
+    $("#lefthandle").click(function() {
+      toggleLeftPanel();
+    });
+
+    $("#righthandle").click(function() {
+      toggleRightPanel();
+    });
+
+    $("#tophandle").click(function() {
+      toggleTopPanel();
+    });
+
+    toggleLeftPanel = function(visible) {
+      var s = $("#lefthandle").find("span.glyphicon");
+      var visnow = s.hasClass("glyphicon-chevron-left");
+      if (visible===undefined || (visible!=visnow)) {
+        $("#left-widget").toggleClass("out");
+        if (!visnow) {
+          s.removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-left");
+          $("#lefthandle").find("a span.handlelabel").css("display", "none");
+        }
+        else {
+          s.removeClass("glyphicon-chevron-left").addClass("glyphicon-chevron-right");
+          $("#lefthandle").find("a span.handlelabel").css("display", "inline");
+        }
+      }
+    }
+
+    toggleRightPanel = function(visible) {
+      var s = $("#righthandle").find("span.glyphicon");
+      var visnow = s.hasClass("glyphicon-chevron-right");
+      if (visible===undefined || (visible!=visnow)) {
+        $("#right-widget").toggleClass("out");
+        if (visnow) {
+          s.removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-left");
+          $("#righthandle").find("a span.handlelabel").css("display", "inline");
+        }
+        else {
+          s.removeClass("glyphicon-chevron-left").addClass("glyphicon-chevron-right");
+          $("#righthandle").find("a span.handlelabel").css("display", "none");
+        }
+      }
+    }
+
+    toggleTopPanel = function() {
+        $(".topwrapper").toggleClass("out");
+        var s = $("#tophandle").find("span.glyphicon");
+        if (s.hasClass("glyphicon-chevron-up")) {
+          s.removeClass("glyphicon-chevron-up").addClass("glyphicon-question-sign");
+          s.css("font-size", "20px");
+          $("#tophandle").find("a span.handlelabel").css("display", "none");
+          $("#tophandle").css("height", "30px");
+          toggleLeftPanel(true);
+          toggleRightPanel(true);
+        }
+        else {
+          s.removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
+          $("#tophandle").find("a span.handlelabel").css("display", "inline");
+          s.css("font-size", "14px");
+          $("#tophandle").css("height", "30px");
+          toggleLeftPanel(false);
+          toggleRightPanel(false);
+        }
+    }
+
+    jQuery.fn.highlight = function (fade, color) {
+      $(this).each(function () {
+          var el = $(this);
+          $("<div/>")
+          .width(el.outerWidth())
+          .height(el.outerHeight())
+          .css({
+              "position": "absolute",
+              "left": el.offset().left,
+              "top": el.offset().top,
+              "background-color": color,
+              "opacity": ".7",
+              "z-index": "9999999"
+          }).appendTo('body').fadeOut(fade).queue(function () { $(this).remove(); });
+      });
+    }
+
+  });
+  </script>
+
+  <script type="text/javascript" src=static/js/saveSvgAsPng.js></script>
+  <script type="text/javascript" src=static/js/generateRandomColors.js></script>
+  <link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+crossorigin=""
+/>
+<script
+src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+crossorigin=""
+></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script>
+  var map = L.map("map",{zoomControl:false});
+  // L.svg().addTo(map);
+  function zoominandout(input){
+map.setZoom(input)
+  }
+  </script>
+  <script type="text/javascript" src=./static/js/d3graph.js></script>
+
+<script type="text/javascript">
+  // graph("#graph",{"neurons": [{"kx": 0.011068000000000001, "ky": 0.0059028, "population": 34, "SomaRegion": "H", "group": "ADA", "link": "http://www.wormatlas.org/neurons/Individual%20Neurons/ADAframeset.html", "name": "ADAL", "type": "inter", "inD": 13, "AYGanglionDesignation": "E", "outD": 21, "AYNbr": 141, "id": 279, "SomaPosition": 0.21},{"kx": 0.093811, "ky": -0.0048988, "organ": "head", "population": 35, "SomaRegion": "H", "group": "SMD", "AYNbr": 108, "functions": "", "name": "SMDVR", "type": "motor, inter", "link": "http://www.wormatlas.org/neurons/Individual%20Neurons/SMDframeset.html", "inD": 20, "AYGanglionDesignation": "C", "outD": 15, "modalities": "proprio", "id": 504, "SomaPosition": 0.13}],
+  // "synapses": [{"from": 279, "target": 1, "to": 504, "type": "S", "weight": 2, "source": 0, "id": 6206}]}, true);
+</script>
+
+<script>
+    function csvToObject(bufferString){
+      var arr = bufferString.split('\n'); 
+      var jsonObj = [];
+  var headers = arr[0].split(',');
+  for(var i = 1; i < arr.length; i++) {
+    var data = arr[i].split(',');
+    var obj = {};
+    for(var j = 0; j < data.length; j++) {
+       obj[headers[j].trim()] = data[j].trim();
+    }
+    jsonObj.push(obj);
+  }
+  return jsonObj;
+    }
+    </script>
+<script type="text/javascript">
+  // graph("#graph",{"neurons": [{"D": 34,"name": "ADAL", "type": "inter","id": "a279","group": "ADA","functions": "Negative chemotaxis. Avoidance of volatile repellents (octanol, 2-nonanone). ADL has a minor role. Contains unexposed ciliated endings in the lips. Putative harsh touch sensor in the head."},{"population": 35,"name": "SMDVR", "type": "motor, inter","id": "b504", "group": "SMD","functions": "Negative chemotaxis. Avoidance of volatile repellents (octanol, 2-nonanone). ADL has a minor role. Contains unexposed ciliated endings in the lips. Putative harsh touch sensor in the head."}],
+  // "synapses": [{"from": "a279", "target": 1, "to": "b504","weight": 2, "source": 0}]}, true);
+  
+  // L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  //         attribution:
+  //           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  //       }).addTo(map);
+        var Stamen_TonerLite = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 20,
+	ext: 'png'
+}).addTo(map);
+        // var pom=L
+    // map.on("load",()=>{
+    //   console.log("da")
+    // })
+  async function getMapBound(node_csvdata) {
+        // const states = [];
+        // // const panadol = await fetch("json.json");
+        // // const gokil = await panadol.json();
+
+        // node_csvdata.forEach(a => {
+        //   const micin = [];
+        //   // a.polygon.forEach(j => micin.push([j.x, j.y]));
+          
+        //   states.push({
+        //     type: "Feature",
+        //     properties: {
+        //       id: a.node,
+        //       name: a.description_n4_eng,
+              
+        //     },
+        //     geometry: {
+        //       type: "Point",
+        //       coordinates: [Number(a.lon),Number(a.lat)]
+        //     }
+        //   });
+        // });
+        // // console.log(states)
+        // var cobin= L.geoJSON(states,{
+        //   onEachFeature: (feature, layer) => {
+        //     // console.log(feature);
+        //     layer.bindPopup(feature.properties.name);
+        //     }
+        // }).addTo(map);
+        
+//         {lat: 9.817329187067783, lng: -59.56787109375001}
+// _southWest: j {lat: 2.9649843693339677, lng: -88.1103515625}
+//                     map.fitBounds(        [
+//     [13.3387613, -67.08561],
+//     [-4.203165, -81.705052]
+// ]);
+map.fitBounds(        [
+    [9.817329187067783, -59.56787109375001],
+    [2.9649843693339677, -88.1103515625]
+]);
+                    // console.log(cobin.getBounds())
+                    // console.log(map.getPixelBounds())
+//                     var svg = document.getElementById('graph').children[0];
+// var overlay = new SVGOverlay(svg, cobin.getBounds()).addTo(map);
+
+        // console.log(states)
+        // return states;
+      }
+ 
+
+  function functiontofindIndexByKeyValue(arraytosearch, key, valuetosearch) {
+
+    for (var i = 0; i < arraytosearch.length; i++) {
+
+      if (arraytosearch[i][key] == valuetosearch) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  function create_nodedata(node_csvdata){
+
+    var node_data = [];
+
+    for (var i = 0; i < node_csvdata.length; i++) {
+        var popul = Math.round(node_csvdata[i].weight);
+        if (node_csvdata[i].weight == "#NUM!") { popul = 0; };
+        var node_element = {
+          "id" : node_csvdata[i].node,
+          "group" : node_csvdata[i].group_eng,
+          "type" : node_csvdata[i].group_eng,
+          "type" : node_csvdata[i].mod_label,
+          "population" : popul,
+          "name" : node_csvdata[i].node,
+          "description_n4" : node_csvdata[i].description_n4_eng,
+          "Degree" : node_csvdata[i].degree,
+          "Weighted-Degree" : node_csvdata[i]["w_degree"]/100000, //   / 1000000
+          "Eigenvector" : node_csvdata[i].eigenvector,
+          "Betweenness" : node_csvdata[i].betweenness,
+          "Clustering" : node_csvdata[i].clustering,
+          "Closeness" : node_csvdata[i].closeness,
+          "Modularity" : node_csvdata[i].modularity,
+          "mapx": -1.0*node_csvdata[i].x+20,
+          "mapy": 1.0*node_csvdata[i].y-30,
+          "x": 1.0*node_csvdata[i].x,
+          "y": 1.0*node_csvdata[i].y,
+          "long": node_csvdata[i].lon,
+          "lat": node_csvdata[i].lat
+
+        };
+        // console.log(popul);
+        node_data[i] = node_element;
+    };
+
+    //console.log(node_data);
+    return node_data;
+
+  }
+
+  function create_linkdata(link_csvdata,node_csvdata){
+
+    var link_data = [];
+
+    for (var i = 0; i < link_csvdata.length; i++) {
+
+        // var weight = Math.round(link_csvdata[i].time_h);
+        var trafico = Math.round(link_csvdata[i].traf_t);
+        var link_element = {
+          "source" : functiontofindIndexByKeyValue(node_csvdata, "node", link_csvdata[i].source),
+          "target" : functiontofindIndexByKeyValue(node_csvdata, "node", link_csvdata[i].target),
+          "from" : link_csvdata[i].source,
+          "to" : link_csvdata[i].target,
+          "weight" : link_csvdata[i].time_h,
+          "trafico" : trafico
+        };
+        
+        link_data[i] = link_element;
+        // console.log(link_csvdata[i].strength);
+    };
+
+    //console.log(link_data);
+    return link_data;
+  }
+
+  // $("#group1").autocomplete({
+  //   select: function(event, ui){
+  //     console.log(event);
+  //     console.log(ui);
+  //   }
+  // });
+function poldi(){
+  var G;
+
+  $.ajax({
+      url: "static/CO_links.csv",
+      success: function (csvd) {
+          var link_csvdata = $.csv.toObjects(csvd);
+          console.log(link_csvdata[0]);
+
+          $.ajax({
+              url: "static/CO_nodes.csv",
+              success: function (csvd1) {
+                  var node_csvdata = $.csv.toObjects(csvd1);
+                  console.log(node_csvdata[0]);
+                  console.log(node_csvdata.length);
+
+                  //creating networks using jsnetworkx
+                  G = new jsnx.Graph();
+                  var nodes = [], links = [];
+                  for(var k = 0; k < link_csvdata.length; k++){
+                    links.push([link_csvdata[k].source, link_csvdata[k].target, {weight: link_csvdata[k].strength}]);
+                  }
+                  for(var k = 0; k < node_csvdata.length; k++){
+                    nodes.push([node_csvdata[k].node, {weight: node_csvdata[k].weight}]);
+                  }
+                  G.addNodesFrom(nodes); G.addEdgesFrom(links);
+                  // G.addEdgesFrom(links);
+                  // var paths = jsnx.shortestPath(G, {source: "J6201", target: "J6130"});
+                  // console.log(paths);
+
+                  var graph_data = {
+                    "neurons":  create_nodedata(node_csvdata),
+                    "synapses": create_linkdata(link_csvdata, node_csvdata)
+                  }
+                  
+         
+                  graph("#graph", graph_data,true);
+                 
+                  //markOnMap(graph_data);
+
+              },
+              dataType: "text",
+              complete: function () {
+                   
+                  // call a function on complete
+              }
+          });
+      },
+      dataType: "text",
+      complete: function () {
+          // call a function on complete
+      }
+  });
+}
+async function haha(){
+  const papa=await axios.get("static/CO_nodes.csv")
+  getMapBound(csvToObject(papa.data))
+}
+haha()
+map.on("load",()=>{
+  poldi()
+})
+
+
+// var markmap = new google.maps.Map(d3.select("#map").node()
+// ,
+//     {
+//     zoom: 4,
+//     disableDefaultUI: true,
+//     center: new google.maps.LatLng(5.800000, -75.916664),
+//     // mapTypeId: 'terrain'
+//   });
+  // const div = document.querySelector('#map');
+  //   div.style.position =  'absolute';
+  //   div.style.overflow =  'hidden';
+  //   div.style.width  = '24vh';
+  //   div.style.height = '180px';
+  //   div.style.bottom = '0%';
+  //   div.style.right  =  '0%';
+    // div.style.justify.content = 'center';
+  // getmapInfo(markmap);
+  // var index = functiontofindIndexByKeyValue(studentsArray, "name", "tanmay");
+  // console.log(index);
+
+
+// {source: "G4661", target: "G4730", strength: "1698168320", year: "1990", type: "type1"}
+
+// {node: "A0121", group: "Agricultura, ganaderia, silvicultura y pesca", description_n4: "Cultivo de uva", weight: "6.19028188"}
+</script>
+
+<!-- OPENTRACKER START -->
+<script src="https://script.opentracker.net/?site=users.ox.ac.uk/~sedm4688/EC_Production/index.html"></script>
+<!-- OPENTRACKER END -->
+
+  </body>
+</html>

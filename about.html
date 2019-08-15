@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from elegans.herokuapp.com/about by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 12 Jan 2018 17:38:10 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+      <title>Worm Circuitry Explorer</title>      
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="A C. elegans connectome explorer / neural network visualization">
+      <meta name="keywords" content="C. elegans, Caenorhabditis, nematode, explorer, visualization, network, graph, neural, nervous system, brain, connectome">
+      <meta name="author" content="Thomas Buhrmann">
+      <link rel="stylesheet" type='text/css' href="static/css/bootstrap-custom.css">
+      <link rel="stylesheet" type='text/css' href="static/css/style.css">
+      <link rel="stylesheet" href="maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+      <link rel="shortcut icon" href="static/images/worm-32.png"> 
+      <script type=text/javascript>$SCRIPT_ROOT = ""; </script>
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-58616029-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+
+  <body>    
+    <!-- Header -->
+    <div class="container-fluid">
+      <div class="header">
+        <div class="container">
+          <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="index.html">
+                <!-- <img src="/static/images/icon.png" width="16" height="16"> -->
+               WCE
+              </a>
+            </div>
+            <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="about.html">About</a></li>
+                <li><a href="discuss.html">Discuss</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div><!-- Header -->
+
+    
+    
+<div class="jumbo-bg"></div>
+<div class="jumbotron">
+  <h1>Worm Circuitry Explorer</h1>
+  <p class="lead">An interactive connectome explorer for the nematode worm <em>C. elegans</em></p>
+  <a href="index.html" type="button" id="snbutton" class="btn btn-warning">Explore Now!</a>
+</div>
+
+    <div class="container main-content">     
+      <div class="row row-centered">
+        <div class="col-centered col-max col-min col-sm-12 col-md-10 col-lg-10 main-content">
+          
+<section id="content" class="content">  
+  <h3><img src="static/images/worm.svg" width="28", height="28">The Worm</h3>
+  <p>
+    <a href="https://en.wikipedia.org/wiki/Caenorhabditis_elegans"><em>Caenorhabditis elegans</em></a> (or simply <em>C. elegans</em>) is a nematode worm of particular interest to many researchers as it was the first multicellular organism to have its whole genome sequenced, and at least for now, remains the only organism whose connectome (neuronal wiring diagram) has been completed in its entirety.
+  </p>
+  <p>
+    <a href="index.html">The Worm Circuitry Explorer</a> is a tool that allows visual and interactive exploration of this connectome. In its current form one of its purposes is to give researchers interested in modelling a specific worm behaviour the means to easily extract subcircuits that may underlie the behaviour in question. 
+  </p>  
+
+  <h3><span class="fa fa-table"></span>Data sources</h3>
+  <p>
+    The adult <em>C. elegans</em> hermaphrodite worm has 302 neurons. The majority of these (282 neurons) belong to the large and densely interconnected somatic nervous system, while a smaller number (20 neurons) makes up the pharyngeal nervous system. In its present form the <em>Worm Circuitry Explorer</em> covers the connectivity between the 279 somatic neurons whose interconnections are best established. 
+  </p>
+  <p>
+    The connectome data the app is based on was first discussed by Chen et al. (2006) <sup><a href="#1">1</a></sup>, a full analysis of which can be found in a more recent publication by Varshney et al. (2011) <sup><a href="#2">2</a></sup>. This data is made available on the <a href="http://www.wormatlas.org/neuronalwiring.html">connectivity pages of the Worm Atlas</a> <sup><a href="#3">3</a></sup>, where further information about its origin can also be found.
+  </p>
+  <p>
+    The primary data is supplemented with two-dimensional position information from Choe et al., 2004 <sup><a href="#4">4</a></sup>; information about neuron groups made available in the Worm Web project <sup><a href="#5">5</a></sup>; and hyperlinks to corresponding pages in the <a href="http://www.wormatlas.org/">WormAtlas</a> <sup><a href="#3">3</a></sup>.
+  </p>
+
+  <h3><span class="fa fa-database"></span>Database</h3>
+  <p>
+    The preprocessed and joined connectome is maintained in <a href="http://neo4j.com/">Neo4j</a>, a graph database in which nodes and edges are stored along with their meta-information. Neo4j offers a powerful query language (<a href="http://neo4j.com/developer/cypher-query-language/">cypher</a>) that is used here to find subcircuits of the full connectome. An example use-case is the identification of the neural subcircuit that connects a set of sensory neurons to a set of motor neurons. Using additional constraints such as the minimum number of synapses per connection, or a maximum path length, the app translates this goal into a cypher query and returns the corresponding circuit as json data ready to be visualized.
+  </p>
+
+  <h3><img src="static/images/molecule.svg" width="28", height="28">Visualization</h3>
+  <p>
+    The network visualization of the connectome is done entirely with <a href="http://d3js.org/" target="_blank">d3.js</a>, a client-side javascript framework for producing interactive visualizations in the browser. Since with d3 all visualized elements are present in the DOM this allows for intuitive interaction with the network. Each neuron can be selected to display detailed properties, highlighted to show its 1st degree neighbourhood, and manually pinned to a fixed position. By default the network is displayed using a modified force-layout, in which sensory, inter- and motor neurons are adjusted to roughly move into different layers. Further information regarding usage is provided in the app itself.
+  </p>
+
+  <h3><span class="fa fa-file-text"></span>References</h3>
+  <ol class="bib">
+    <li><a name="5"></a> 
+      Nikhil Bhatla, <a href="http://wormweb.org/">WormWeb.org</a>
+    </li>
+    <li><a name="1"></a>
+      Chen, Hall, and Chklovskii (2006). <em>Wiring optimization can relate neuronal structrure and function.</em> PNAS 103: 4723-4728 (<a target="_blank" href="http://dx.doi.org/10.1073/pnas.0506806103">doi:10.1073/pnas.0506806103</a>).
+    </li>
+    <li><a name="4"></a>
+      Choe Y, McCormick BH and Koh W (2004). <em>Network connectivity analysis on the temporally augmented C. elegans web: A pilot study</em>. Society of Neuroscience Abstracts 30:921.9. <a href="http://www.dynamic-connectome.org/?page_id=25">Dynamic Connectime Lab data.</a>
+    </li>
+    <li><a name="2"></a>
+      Varshney, Chen, Paniaqua, Hall and Chklovskii (2011). <em>Structural properties of the C. elegans neuronal network.</em> PLoS Comput. Biol. 3:7:e1001066 (<a target="_blank" href="http://dx.doi.org/10.1371/journal.pcbi.1001066">doi:10.1371/journal.pcbi.1001066</a>).
+    </li>
+    <li><a name="3"></a>
+      WormAtlas, Altun, Z.F., Herndon, L.A., Crocker, C., Lints, R. and Hall, D.H. (ed.s) 2002-2015. <a href="#">http://www.wormatlas.org</a>
+    </li>
+  </ol>
+  
+</section>
+
+        </div>
+      </div>
+    </div><!-- container -->
+    
+
+    <!-- footer -->
+    <div class="container-fluid aw-footer"> 
+      <div class="row row-centered">
+        <div class="col-md-3 col-centered text-center">
+          <h4>Author</h4>
+          <ul class="list-unstyled my-list-style">
+            <li><a href="https://buhrmann.github.io/">Homepage</a></li>
+            <li><a href="http://www.ias-research.net/people/thomas-buhrmann/">Academic Home</a></li>
+            <li><a href="http://github.com/buhrmann">Github</a></li>
+            <li><a href="http://www.linkedin.com/in/thomasbuhrmann">LinkedIn</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3 col-centered text-center">
+          <h4>Links</h4>
+          <ul class="list-unstyled my-list-style">
+            <li><a href="https://en.wikipedia.org/wiki/Caenorhabditis_elegans">C. elegans</a></li>
+            <li><a href="http://www.wormatlas.org/">Worm Atlas</a></li>
+            <li><a href="http://www.openworm.org/">Open Worm</a></li>
+            <li><a href="http://wormweb.org/neuralnet#c=BAG&m=1">Worm Web</a></li>                        
+          </ul>
+        </div>
+        <div class="col-md-3 col-centered text-center">
+          <h4>Credits</h4>
+          <ul class="list-unstyled my-list-style">
+            <li>Created by<br><a href="https://buhrmann.github.io/" target="_blank">Thomas Buhrmann</a></li>
+            <li>Idea<br><a href="http://mypage.iu.edu/~edizquie/" target="_blank">Eduardo Izquierdo</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <script type='text/javascript' src="code.jquery.com/jquery-2.1.3.min.js"> </script>
+    <script type="text/javascript" src=static/js/bootstrap.min.js></script>
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','../www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-58616029-1', 'auto');
+        ga('send', 'pageview');
+      </script>    
+     
+<script type='text/javascript'>
+
+$(function() {
+  var jumboHeight = $('.jumbotron').outerHeight();  
+  function parallax() {    
+    var scrolled = $(window).scrollTop();
+    var top = parseInt($('.jumbo-bg').css('top').slice(0,-2));
+    var newTop = 52 - scrolled/2;
+    var newTop = newTop > 52 ? 52 : newTop; 
+    //$('.jumbo-bg').css('height', (jumboHeight-scrolled) + 'px');
+    $('.jumbo-bg').css('top', newTop + 'px');
+  }
+
+
+  $(window).scroll(function(e){
+      parallax();
+  });
+});
+</script>
+    
+  </body>
+
+<!-- Mirrored from elegans.herokuapp.com/about by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 12 Jan 2018 17:38:19 GMT -->
+</html>
