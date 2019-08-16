@@ -165,28 +165,66 @@ function group_auto(data) {
 // Grap with d3
 //-------------------------------------------------------------------
 function translateSVG() {
-    var viewBoxLeft = document.querySelector("svg.leaflet-zoom-animated").viewBox.animVal.x;
-    var viewBoxTop = document.querySelector("svg.leaflet-zoom-animated").viewBox.animVal.y;
+    
+    var viewBoxLeft = document.querySelector("svg#lucu").viewBox.animVal.x;
+    var viewBoxTop = document.querySelector("svg#lucu").viewBox.animVal.y;
     // Reszing width and height incase of window resize
     svg.attr("width", window.innerWidth)
     svg.attr("height", window.innerHeight)
       // Adding the ViewBox attribute to our SVG to contain it
-    svg.attr("viewBox", function() {
-      return "" + viewBoxLeft + " " + viewBoxTop + " " + window.innerWidth + " " + window.innerHeight;
-    });
+    // svg.attr("viewBox", function() {
+    //   return "" + viewBoxLeft + " " + viewBoxTop + " " + window.innerWidth + " " + window.innerHeight;
+    // });
     // Adding the style attribute to our SVG to transkate it
+    var haha = document.querySelector("canvas");
     svg.attr("style", function() {
       return "overflow: overlay;" + "transform: translate3d(" + viewBoxLeft + "px, " + viewBoxTop + "px, 0px);";
     });
-}
+    haha.style.overflow="overlay"
+    haha.style.transform="transform: translate3d(" + viewBoxLeft + "px, " + viewBoxTop + "px, 0px);"
+    // context.translate(viewBoxLeft,viewBoxTop)
+    // haha.style.transform=document.querySelector(".leaflet-map-pane").style.transform.replace("-","")
+    // haha.setAttribute("viewBox","" + viewBoxLeft + " " + viewBoxTop + " " + window.innerWidth + " " + window.innerHeight)
+    // haha.width=window.innerWidth
+    // haha.height=window.innerHeight
+    // context.scale(width,height)
+    // context.translate(viewBoxLeft,viewBoxTop)
+    // haha.style="overflow: overlay;" + "transform: translate3d(" + viewBoxLeft + "px, " + viewBoxTop + "px, 0px);";
+    
 
-map.on("moveend",function(){
-    // console.log("sd")
+}
+// map.on("viewreset",function(){
+    
+//     if(force!==undefined){
+//         // translateSVG()
+        
+//         node.attr("transform", function (d) {
+//             var tx = Math.round(d.x); var ty = Math.round(d.y);
+//             const ha=map.latLngToLayerPoint([d.lat,d.long]);
+//             d.x=ha.x
+//             d.y=ha.y
+//               if(!isNaN(d.x))
+//                   return "translate(" + ha.x + "," + ha.y + ")";
+//               else
+//                   // see which nodes are giving you an error
+//                   //console.log(d)
+//                   return "translate(0,0)";
+//               })
+//             //   drawCanvas()
+            
+//     // context.save();
+//     drawCanvas()
+//     }
+// })
+map.on("zoom",function(){
     if(force!==undefined){
         translateSVG()
+        
         node.attr("transform", function (d) {
             var tx = Math.round(d.x); var ty = Math.round(d.y);
             const ha=map.latLngToLayerPoint([d.lat,d.long]);
+            d.x=ha.x
+            d.y=ha.y
               if(!isNaN(d.x))
                   return "translate(" + ha.x + "," + ha.y + ")";
               else
@@ -194,7 +232,33 @@ map.on("moveend",function(){
                   //console.log(d)
                   return "translate(0,0)";
               })
-
+              drawCanvas()
+            
+    // context.save();
+    // drawCanvas()
+    }
+})
+map.on("move",function(){
+    // console.log("sd")
+    if(force!==undefined){
+        translateSVG()
+        // drawCanvas()
+        
+    
+        node.attr("transform", function (d) {
+            var tx = Math.round(d.x); var ty = Math.round(d.y);
+            const ha=map.latLngToLayerPoint([d.lat,d.long]);
+            d.x=ha.x
+            d.y=ha.y
+              if(!isNaN(d.x))
+                  return "translate(" + ha.x + "," + ha.y + ")";
+              else
+                  // see which nodes are giving you an error
+                  //console.log(d)
+                  return "translate(0,0)";
+              })
+              
+              drawCanvas()
     }
     
     // d3.selectAll("circle")
@@ -208,15 +272,18 @@ graph = function(id, d, canvas) {
 
     zoom = d3.behavior.zoom().scaleExtent([0.25, 4]).on("zoom", zoomed);
     // var slap=map.getPixelBounds()
-    
+    d3.select(map.getPanes().overlayPane).append("div")
+    .attr("id","flo")
+    .attr("style","overflow:overlay;")
     // Containers
     if (use_canvas) {
-        canvas = d3.select(map.getPanes().overlayPane).insert("canvas", id)
+        canvas = d3.select("#flo").insert("canvas", id)
             .attr("width", width)
             .attr("height", height)
             .style("position", "absolute");
 
         context = canvas.node().getContext("2d");
+        
         canvas.call(zoom).on("dblclick.zoom", null);
     }
     // d3.select(map.getPanes().overlayPane).append("div")
@@ -224,7 +291,7 @@ graph = function(id, d, canvas) {
     // map._initPathRoot()  
     // svg=d3.select(id)
     svg = d3.select(map.getPanes().overlayPane)
-    .append("svg")
+    .append("svg").attr("id","lucu")
     // svg = d3.select(id).append("svg")
     
         // .attr("viewBox", "0 0 " + width + " " + height)
@@ -239,8 +306,8 @@ graph = function(id, d, canvas) {
 
         // var transform = d3.geo.transform({ point: projectPoint });
         // var path = d3.geo.path().projection(transform);
-    // container = svg.append("g")
-    //     .attr("style", "cursor:move")
+    container = svg.append("g")
+        .attr("style", "cursor:move")
     //     .attr("width", map.getSize().x + "px")
     //     .attr("height", map.getSize().y + "px")
     //     .attr("transform", "translate(" + -topLeft.x + "," + -topLeft.y + ")")
@@ -355,7 +422,7 @@ graph = function(id, d, canvas) {
     buildLegend();
 
     d3.select(window).on("resize", resize);
-    
+    drawCanvas()
     // var soki = d3.select(map.getPanes().overlayPane).append("svg"),
     // g = soki.append("g").attr("class", "leaflet-zoom-hide");
 }
@@ -371,7 +438,7 @@ markOnMap = function(dat){
 
 console.log(dat.long);
 var myOptions = { zoom : 5};
-markmap.setOptions(myOptions);
+// markmap.setOptions(myOptions);
     //console.log(data.synapses);
     var fnl = [] ;
     var j =0;
@@ -504,6 +571,8 @@ function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
     svg.attr('width', width).attr("height", height);
+    document.getElementsByTagName("canvas")[0].width=width
+    document.getElementsByTagName("canvas")[0].height=height
     // initNodePos(node)
     // console.log(node)
     force.size([width, height]).resume();
@@ -1044,19 +1113,27 @@ colToRgba = function (col, o) {
 }
 
 drawCanvas = function() {
+    // console.log("da")
+    var topLeft = map.containerPointToLayerPoint([0, 0]);
+        L.DomUtil.setPosition(document.getElementsByTagName("canvas")[0], topLeft);
     context.clearRect(0, 0, width, height);
     context.save();
     context.translate(transX, transY);
     context.scale(scale, scale);
-
+    
+    
+    
+// console.log(transX,transY)
     highlighted = links.filter(function(x) { return x.opacity==linkOpacityHighlight; });
-
+// console.log(highlighted)
     if (highlighted.length == 0 && links.length > numLinksDrawThresh) {
         // Draw simple background connections
         context.strokeStyle = "rgb(200,200,200)";
         context.beginPath();
         links.forEach(function (l) {
-            drawLine(l.source.x, l.source.y, l.target.x, l.target.y);
+            const source=map.latLngToContainerPoint([l.source.lat, l.source.long])
+            const target=map.latLngToContainerPoint([l.target.lat, l.target.long])
+            drawLine(source.x, source.y, target.x, target.y);
         });
         context.stroke();
     } else {
@@ -1070,6 +1147,7 @@ drawCanvas = function() {
                 context.setLineDash(l.type == "EJ" ? [2,3] : []);
                 context.strokeStyle = l.strokeStyle;
                 context.fillStyle = l.strokeStyle;
+                
                 drawCurveArrow(l.source.x, l.source.y, l.target.x, l.target.y);
             });
         } else {
@@ -1079,7 +1157,9 @@ drawCanvas = function() {
                     context.strokeStyle = l.strokeStyle;
                     context.lineWidth = l.lineWidth;
                     // context.setLineDash([]);
-                    drawLine(l.source.x, l.source.y, l.target.x, l.target.y);
+                    const source=map.latLngToContainerPoint([l.source.lat, l.source.long])
+            const target=map.latLngToContainerPoint([l.target.lat, l.target.long])
+                    drawLine(source.x, source.y, target.x, target.y);
                     context.stroke();
             });
 
@@ -1089,7 +1169,9 @@ drawCanvas = function() {
                     context.strokeStyle = l.strokeStyle;
                     context.lineWidth = l.lineWidth;
                     context.setLineDash([2,3]);
-                    drawLine(l.source.x, l.source.y, l.target.x, l.target.y);
+                    const source=map.latLngToContainerPoint([l.source.lat, l.source.long])
+            const target=map.latLngToContainerPoint([l.target.lat, l.target.long])
+                    drawLine(source.x, source.y, target.x, target.y);
                     context.stroke();
             });
 
@@ -1109,6 +1191,7 @@ drawCanvas = function() {
     //context.fillStyle = l.fillStyle;
     //context.lineWidth = l.lineWidth;
     context.restore();
+    
 }
 
 
@@ -1135,7 +1218,7 @@ tick = function() {
         node.each(collide(0.2));
 
         if (use_canvas) {
-            drawCanvas();
+            // drawCanvas();
         } else {
             
             if (arcs) {
@@ -1208,6 +1291,8 @@ tick = function() {
         node.attr("transform", function (d) {
           var tx = Math.round(d.x); var ty = Math.round(d.y);
           const ha=map.latLngToLayerPoint([d.lat,d.long]);
+          d.x=ha.x
+          d.y=ha.y
             if(!isNaN(d.x))
                 return "translate(" + ha.x + "," + ha.y + ")";
             else
@@ -1274,8 +1359,8 @@ function nodeClicked(d) {
         });
 
         node.on("click", function (o) {
-            setMapOnAll(null);
-            markOnMap(o);
+            // setMapOnAll(null);
+            // markOnMap(o);
             return neighboring(d, o) | neighboring(o, d) ? clicker(o, this) : null;
 
 
@@ -1325,10 +1410,10 @@ function nodeClicked(d) {
 }
 
 function connectedNodes(d) {
-  console.log(d);
+//   console.log(d);
     if (d != null) {
         if ((highlightId == -1) || (highlightId == d.id)) {
-
+// console.log(highlightId)
             // Reduce the opacity of all but the neighbouring nodes
             node.style("opacity", function (o) {
               // console.log(d, o)
@@ -1460,13 +1545,15 @@ function dragged(d) {
 }
 
 function zoomed() {
-    if (use_canvas) {
-        scale = d3.event.scale;
-        transX = d3.event.translate[0];
-        transY = d3.event.translate[1];
-        drawCanvas();
-    }
-    container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    // if (use_canvas) {
+        
+    //     scale = d3.event.scale;
+    //     transX = d3.event.translate[0];
+    //     transY = d3.event.translate[1];
+    //     console.log("scale")
+    //     // drawCanvas();
+    // }
+    // container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
 collide = function(alpha) {
