@@ -1218,7 +1218,7 @@ tick = function() {
         node.each(collide(0.2));
 
         if (use_canvas) {
-            // drawCanvas();
+            drawCanvas();
         } else {
             
             if (arcs) {
