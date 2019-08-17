@@ -316,7 +316,7 @@ graph = function(id, d, canvas) {
 
     linkLayer = svg.append("g");
     nodeLayer = svg.append("g").attr("class", "leaflet-zoom-hide");
-
+    
     // Scales
     col_sensory = "#ED008C"
     col_motor = "#F5892D"
@@ -332,7 +332,7 @@ graph = function(id, d, canvas) {
     // }
 
     colors  = generateRandomColors(30);
-
+    
 
     nodeColorScale = d3.scale.ordinal().domain(neuronTypes).range(colors);
 
@@ -369,6 +369,7 @@ graph = function(id, d, canvas) {
                 .attr("d", "M0,-5L10,0L0,5");
 // console.log(links)
     // Create force layout
+    
     force = d3.layout.force()
         .nodes(nodes)
         .links(links)
@@ -403,15 +404,23 @@ graph = function(id, d, canvas) {
     // Crossfilter
     nfilter.add(data['neurons']);
     efilter.add(data['synapses']);
+    
     nodesPopDim = nfilter.dimension(function(d) { return d.population; });
+    
     edgesWeightDim = efilter.dimension(function(d) { return d.type != "EJ" ? d.weight : 6666; }); // FILTER WEIGHT
-    trafWeightDim = efilter.dimension(function(d) { return d.type != "EJ" ? d.trafico : 6666; });
-
+    
+    trafWeightDim = efilter.dimension(function(d) { 
+        // console.log(d.type)
+        return d.type != "EJ" ? d.trafico : 6666;
+     });
+    // console.log(trafWeightDim)
+    // return;
+    // return;
     // Set up auto-complete for group inputs
     group_auto(data);
 // console.log(data.synapses[0])
     update(data.neurons, data.synapses);
-    filter(nhabVal, tminVal, ttrafVal);
+    // filter(nhabVal, tminVal, ttrafVal);
 
     // Warm-start
     for (i = 0; i < 10; i++)

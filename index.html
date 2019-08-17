@@ -737,13 +737,14 @@ function poldi(){
   
 
   $.ajax({
-      url: "static/CO_links.csv",
+      url: "static/VZ_links7.csv",
       success: function (csvd) {
           var link_csvdata = $.csv.toObjects(csvd);
           console.log(link_csvdata[0]);
+          console.log(link_csvdata.length);
 
           $.ajax({
-              url: "static/CO_nodes.csv",
+              url: "static/VZ_nodes7.csv",
               success: function (csvd1) {
                   var node_csvdata = $.csv.toObjects(csvd1);
                   console.log(node_csvdata[0]);
@@ -759,7 +760,7 @@ function poldi(){
                     nodes.push([node_csvdata[k].node, {weight: node_csvdata[k].weight}]);
                   }
                   G.addNodesFrom(nodes); G.addEdgesFrom(links);
-                  // G.addEdgesFrom(links);
+                  G.addEdgesFrom(links);
                   // var paths = jsnx.shortestPath(G, {source: "J6201", target: "J6130"});
                   // console.log(paths);
 
