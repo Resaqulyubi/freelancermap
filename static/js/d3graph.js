@@ -1994,11 +1994,16 @@ function exportSvg() {
 }
 
 function downloadPng() {
+    // printPlugin.printMap('CurrentSize', 'Map');
     // From https://github.com/exupero/saveSvgAsPng
-    var ctn = document.getElementById("graph");
-    var svg = ctn.getElementsByTagName("svg")[0];
-    saveSvgAsPng(svg, "graph.png");
+    // var ctn = document.getElementById("map");
+    // var svg = ctn.getElementsByTagName("svg")[0];
+    // saveSvgAsPng(svg, "graph.png");
+    
+    printPlugin.printMap('A4Landscape', 'graph');      
+    document.getElementById("map").parentElement.style.display="block"
 }
+
 
 
 // -----------------------------------------------------------------

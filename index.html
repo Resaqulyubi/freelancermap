@@ -17,6 +17,7 @@
   #map {
     height: 100%;
     width: 100%;
+    
   }
 </style>
 <body>
@@ -551,14 +552,39 @@ src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
 integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
 crossorigin=""
 ></script>
+
+<script src="/static/leaflet-tilelayer-colorfilter.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+<script src="/static/bundle1.js"></script>
   <script>
   var map = L.map("map",{zoomControl:false});
+   
   // L.svg().addTo(map);
   function zoominandout(input){
 map.setZoom(input)
   }
+  let myFilter = [
+    
+    'grayscale:100%',
+    
+];  
+  const pupu=L.tileLayer.colorFilter("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            filter:myFilter,
+            
+        }).addTo(map);
+        var printPlugin = L.easyPrint({
+          // position:'bottomright',
+  hidden: true,
+  hideControlContainer:true,
+  exportOnly:true,
+  sizeModes: ['A4Landscape'],
+  tileLayer:pupu,
+  tileWait:1000
+}).addTo(map);
   </script>
+  
   <script type="text/javascript" src=./static/js/d3graph.js></script>
 
 <script type="text/javascript">
@@ -586,17 +612,11 @@ map.setZoom(input)
   // graph("#graph",{"neurons": [{"D": 34,"name": "ADAL", "type": "inter","id": "a279","group": "ADA","functions": "Negative chemotaxis. Avoidance of volatile repellents (octanol, 2-nonanone). ADL has a minor role. Contains unexposed ciliated endings in the lips. Putative harsh touch sensor in the head."},{"population": 35,"name": "SMDVR", "type": "motor, inter","id": "b504", "group": "SMD","functions": "Negative chemotaxis. Avoidance of volatile repellents (octanol, 2-nonanone). ADL has a minor role. Contains unexposed ciliated endings in the lips. Putative harsh touch sensor in the head."}],
   // "synapses": [{"from": "a279", "target": 1, "to": "b504","weight": 2, "source": 0}]}, true);
   
-  // L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  //         attribution:
-  //           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  //       }).addTo(map);
-        var Stamen_TonerLite = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}', {
-	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-	subdomains: 'abcd',
-	minZoom: 0,
-	maxZoom: 20,
-	ext: 'png'
-}).addTo(map);
+//   var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+// 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+// 	subdomains: 'abcd',
+// 	maxZoom: 19
+// }).addTo(map);
         // var pom=L
     // map.on("load",()=>{
     //   console.log("da")
